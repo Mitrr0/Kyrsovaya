@@ -1,26 +1,33 @@
-void cocktailSort(vector<int>& arr) {
+// Функция шейкерной сортировки (Cocktail Sort) - улучшенная версия пузырьковой
+void cocktailSort(vector<int>& arr) 
+{
     int n = arr.size();
-    bool swapped = true;
-    int start = 0;
-    int end = n - 1;
+    bool swapped = true; // Флаг, указывающий, были ли перестановки
+    int start = 0;       // Начальный индекс неотсортированной части
+    int end = n - 1;     // Конечный индекс неотсортированной части
 
-    while (swapped) {
+    while (swapped) 
+    {
         swapped = false;
-        for (int i = start; i < end; i++)
-            if (arr[i] > arr[i + 1]) {
+        for (int i = start; i < end; i++)// Проход слева направо (как в обычной пузырьковой сортировке)
+            if (arr[i] > arr[i + 1]) 
+            {
                 swap(arr[i], arr[i + 1]);
                 swapped = true;
             }
-        if (!swapped)
+        if (!swapped)// Если не было перестановок, массив отсортирован
             break;
-        end--;
+        end--; // Уменьшаем конечную границу, так как последний элемент уже на месте
+
         swapped = false;
-        for (int i = end - 1; i >= start; i--) {
-            if (arr[i] > arr[i + 1]) {
+        for (int i = end - 1; i >= start; i--)// Проход справа налево
+        {
+            if (arr[i] > arr[i + 1])
+            {
                 swap(arr[i], arr[i + 1]);
                 swapped = true;
             }
         }
-        start++;
+        start++; // Увеличиваем начальную границу, так как первый элемент уже на месте
     }
 }
