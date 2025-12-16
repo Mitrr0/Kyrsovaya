@@ -1,0 +1,201 @@
+#include <iostream>
+#include <vector>
+#include <random>
+#include <chrono>
+#include <algorithm>
+
+using namespace std;
+
+// Сортировка пузырьком (Bubble Sort)
+void bubbleSort(vector<int>& v)
+{
+    int n = v.size();
+    for (int i = 0; i < n - 1; i++)    // Внешний цикл: проходит по всем элементам массива
+        for (int j = 0; j < n - i - 1; j++) // Внутренний цикл: сравнивает соседние элементы. На i-ой итерации i элементов находятся на своих местах
+            if (v[j] > v[j + 1]) // Если текущий элемент больше следующего, меняем их местами
+                swap(v[j], v[j + 1]);
+}
+
+// Функция шейкерной сортировки (Cocktail Sort) - улучшенная версия пузырьковой
+void cocktailSort(vector<int>& arr)
+{
+    int n = arr.size();
+    bool swapped = true; // Флаг, указывающий, были ли перестановки
+    int start = 0;       // Начальный индекс неотсортированной части
+    int end = n - 1;     // Конечный индекс неотсортированной части
+
+    while (swapped)
+    {
+        swapped = false;
+        for (int i = start; i < end; i++)// Проход слева направо (как в обычной пузырьковой сортировке)
+            if (arr[i] > arr[i + 1])
+            {
+                swap(arr[i], arr[i + 1]);
+                swapped = true;
+            }
+        if (!swapped)// Если не было перестановок, массив отсортирован
+            break;
+        end--; // Уменьшаем конечную границу, так как последний элемент уже на месте
+
+        swapped = false;
+        for (int i = end - 1; i >= start; i--)// Проход справа налево
+        {
+            if (arr[i] > arr[i + 1])
+            {
+                swap(arr[i], arr[i + 1]);
+                swapped = true;
+            }
+        }
+        start++; // Увеличиваем начальную границу, так как первый элемент уже на месте
+    }
+}
+
+// Генерация массива случайных чисел
+vector<int> generateRandomArray(int size) {
+    vector<int> arr(size);
+    random_device rd;        
+    mt19937 gen(rd());       // Генератор случайных чисел
+    uniform_int_distribution<int> dist(1, 10000); // Равномерное распределение
+    for (int i = 0; i < size; i++)
+        arr[i] = dist(gen);
+    return arr;
+}
+
+// Генерация отсортированного массива (по возрастанию)
+vector<int> generateSortedArray(int size) {
+    vector<int> arr(size);
+    for (int i = 0; i < size; i++) 
+        arr[i] = i + 1; // Числа от 1 до size
+    return arr;
+}
+
+// Генерация массива, отсортированного в обратном порядке (по убыванию)
+vector<int> generateReverseSortedArray(int size) {
+    vector<int> arr(size);
+    for (int i = 0; i < size; i++) 
+        arr[i] = size - i; // Числа от size до 1
+    return arr;
+}
+
+// Генерация почти отсортированного массива
+vector<int> generateNearlySortedArray(int size, int swaps = 10)
+{
+    vector<int> arr = generateSortedArray(size); // Сначала создаем отсортированный массив
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> dist(0, size - 1); // Для случайных индексов
+
+    for (int i = 0; i < swaps; i++)     // Выполняем несколько случайных перестановок
+    {
+        int idx1 = dist(gen);
+        int idx2 = dist(gen);
+        swap(arr[idx1], arr[idx2]); // Меняем местами два случайных элемента
+    }
+    return arr;
+}
+
+// Тестирование алгоритмов на массивах разных размеров
+void testAlgorithms()
+{
+    vector<int> sizes = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000 };
+    const int TESTS_PER_SIZE = 1000; // Количество тестов для каждого размера
+
+    // Тестируем для каждого размера массива
+    for (int size : sizes) 
+    {
+        double bubbleTotal = 0.0;   // Суммарное время для bubble sort
+        double cocktailTotal = 0.0; // Суммарное время для cocktail sort
+
+        // Многократное тестирование для получения статистически значимых результатов
+        for (int test = 0; test < TESTS_PER_SIZE; test++) 
+        {
+            vector<int> testArray = generateRandomArray(size);
+            vector<int> copy1 = testArray; 
+            // Тестирование bubble sort
+            auto start = chrono::high_resolution_clock::now();
+            bubbleSort(copy1);
+            auto end = chrono::high_resolution_clock::now();
+            double bubbleTime = chrono::duration<double, milli>(end - start).count();
+            // Тестирование cocktail sort
+            start = chrono::high_resolution_clock::now();
+            cocktailSort(testArray);
+            end = chrono::high_resolution_clock::now();
+            double cocktailTime = chrono::duration<double, milli>(end - start).count();
+
+            bubbleTotal += bubbleTime;
+            cocktailTotal += cocktailTime;
+        }
+
+        // Вывод среднего времени выполнения для текущего размера массива
+        cout << "Размер " << size << ":" << endl;
+        cout << "Bubble: " << bubbleTotal / TESTS_PER_SIZE << "ms" << endl;
+        cout << "Cocktail: " << cocktailTotal / TESTS_PER_SIZE << "ms" << endl;
+        cout << endl;
+    }
+}
+
+// Тестирование алгоритмов на разных типах массивов
+void testDifferentCases()
+{
+    const int SIZE = 1000;           // Фиксированный размер массива
+    const int TESTS_PER_CASE = 100;  // Количество тестов для каждого типа массива
+
+    vector<string> cases = { "Случайный", "Отсортированный", "Обратно отсортированный", "Почти отсортированный" };
+
+    cout << "Размер массива: " << SIZE << endl;
+
+    // Тестируем для каждого типа массива
+    for (const string& caseName : cases)
+    {
+        double bubbleTotal = 0.0;   // Суммарное время для bubble sort
+        double cocktailTotal = 0.0; // Суммарное время для cocktail sort
+
+        for (int test = 0; test < TESTS_PER_CASE; test++) 
+        {
+            vector<int> testArray;
+            vector<int> testArray1;
+
+            // Генерация массива в зависимости от типа
+            if (caseName == "Случайный") 
+                testArray = generateRandomArray(SIZE);
+            else if (caseName == "Отсортированный") 
+                testArray = generateSortedArray(SIZE);
+            else if (caseName == "Обратно отсортированный") 
+                testArray = generateReverseSortedArray(SIZE);
+            else if (caseName == "Почти отсортированный") 
+                testArray = generateNearlySortedArray(SIZE, 10); // 10 перестановок
+
+            testArray1 = testArray; // Создаем копию для второго алгоритма
+
+            // Тестирование bubble sort
+            auto start = chrono::high_resolution_clock::now();
+            bubbleSort(testArray);
+            auto end = chrono::high_resolution_clock::now();
+            bubbleTotal += chrono::duration<double, milli>(end - start).count();
+
+            // Тестирование cocktail sort
+            start = chrono::high_resolution_clock::now();
+            cocktailSort(testArray1);
+            end = chrono::high_resolution_clock::now();
+            cocktailTotal += chrono::duration<double, milli>(end - start).count();
+        }
+
+        // Вывод результатов для текущего типа массива
+        cout << caseName << " массив" << endl;
+        cout << "Bubble: " << bubbleTotal / TESTS_PER_CASE << " ms" << endl;
+        cout << "Cocktail: " << cocktailTotal / TESTS_PER_CASE << " ms" << endl;
+        cout << endl;
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian"); 
+
+    cout << "Тестирование на случайных массивах: " << endl;
+    testAlgorithms(); // Тестирование на массивах разных размеров
+
+    cout << "Тестирование на разных типах массивов: " << endl;
+    testDifferentCases(); // Тестирование на разных типах массивов
+
+    return 0;
+}
